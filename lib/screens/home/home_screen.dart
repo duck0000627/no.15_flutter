@@ -17,7 +17,8 @@ class HomeScreen extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('農作物紀錄'),),
-      body: ListView.builder(
+      body:
+      ListView.builder(
         itemCount: mockRecords.length,
         itemBuilder: (context, index){
           final record = mockRecords[index];
@@ -29,7 +30,13 @@ class HomeScreen extends StatelessWidget{
             ),
             trailing: Text(record['date']!),
           );
-        }),
+        },
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){},
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
