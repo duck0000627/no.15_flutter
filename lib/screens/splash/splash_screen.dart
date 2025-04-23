@@ -26,11 +26,26 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SizedBox.expand(
-        child: Image.asset(
-          'assets/login_background.png',
-          width: 250,
-          fit: BoxFit.cover,
-        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: // 背景圖片
+                Image.asset(
+                  'assets/login_background.png',
+                  fit: BoxFit.cover,
+                ),
+            ),
+            // LOGO
+            Positioned(
+              top: 50,
+              left: MediaQuery.of(context).size.width / 2 - 150,  // 讓 LOGO 水平居中，這裡 50 是 LOGO 的寬度的一半
+              child: Image.asset(
+                  'assets/icon.png',
+                  width: 300,
+              ),
+            )
+          ],
+        )
       ),
     );
   }
