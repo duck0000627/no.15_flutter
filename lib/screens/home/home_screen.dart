@@ -24,55 +24,86 @@ class HomeScreen extends StatelessWidget{
     return Scaffold(
       appBar: AppBar(title: const Text('農作物紀錄'),),
       body:ListView(
-          children: groupedRecords.entries.map((entry){
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  color: Colors.green[200],
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    entry.key,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                ...entry.value.map((record){
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.green[100],
-                      child: const Icon(Icons.agriculture, color: Colors.black),
+          children:[
+            //標題
+            Container(
+              color: Colors.green[100],
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: const [
+                  Expanded(flex: 2,child: Text('日期', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(flex: 3,child: Text('工作項目', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(flex: 2,child: Text('田區代號', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(flex: 3,child: Text('備註', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+            //分組資料
+            ...groupedRecords.entries.map((entry){
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //日期欄位
+                    Container(
+                      color: Colors.green[200],
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        entry.key,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
 
-                    // 工作項目（粗體）
-                    title: Text(
-                      record['task']!,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    //每筆資料
+                    ...entry.value.map((record){
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            // 空出日期欄位的寬度，讓對齊
+                            const Expanded(flex: 2, child: SizedBox()),
 
-                    // 田區代號與備註（多行）
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('田區代號：${record['field']}'),
-                        if (record['note'] != null && record['note']!.isNotEmpty)
-                          Text('備註：${record['note']}'),
-                      ],
-                    ),
+                            // 工作項目
+                            Expanded(
+                              flex: 3, 
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.green[100],
+                                    radius: 16,
+                                    child: const Icon(Icons.agriculture),
+                                  ),
+                                  const SizedBox(width: 8,),
+                                  Text(
+                                    record['task']!,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
 
-                    // 右側箭頭圖示
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  );
-                }).toList(),
-              ],
-            );
-          }).toList(),
+                            //田區代號
+                            Expanded(flex: 2,child: Text(record['field']!)),
+
+                            //備註
+                            Expanded(
+                              flex: 3,
+                              child: Text(record['note']!.isEmpty ? '-' : record['note']!),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ],
+              );
+            }).toList(),
+          ],
       ),
 
       floatingActionButton: FloatingActionButton(
         onPressed: (){},
         child: const Icon(Icons.add),
       ),
+      
     );
   }
 }
