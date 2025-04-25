@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../add_screen.dart';
+import 'record_detail_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -115,28 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.transparent, // 不設定會預設白底
                     child: InkWell(
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('詳細資訊'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('日期：${entry.key}'),
-                                Text('工作項目：${record['task']}'),
-                                Text('田區代號：${record['field']}'),
-                                Text('備註：${record['note']!.isEmpty ? '-' : record['note']}'),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('關閉'),
-                              ),
-                            ],
-                          ),
-                        );
+                        showRecordDetailDialog(context, record, entry.key);
                       },
                       hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
                       splashColor: Colors.green[100], // 點擊時的水波紋顏色
