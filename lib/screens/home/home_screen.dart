@@ -111,87 +111,80 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 //每筆資料
                 ...entry.value.map((record) {
-                  return GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              title: const Text('詳細資訊'),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  return Material(
+                    color: Colors.transparent, // 不設定會預設白底
+                    child: InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('詳細資訊'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('日期：${entry.key}'),
+                                Text('工作項目：${record['task']}'),
+                                Text('田區代號：${record['field']}'),
+                                Text('備註：${record['note']!.isEmpty ? '-' : record['note']}'),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('關閉'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
+                      splashColor: Colors.green[100], // 點擊時的水波紋顏色
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            const Expanded(flex: 2, child: SizedBox()),
+
+                            //農作物
+                            Expanded(flex: 2, child: Text(record['crops'] ?? '')),
+
+                            // 工作項目
+                            Expanded(
+                              flex: 2,
+                              child: Row(
                                 children: [
-                                  Text('日期：${entry.key}'),
-                                  Text('工作項目：${record['task']}'),
-                                  Text('田區代號：${record['field']}'),
+                                  CircleAvatar(
+                                    backgroundColor: Colors.green[100],
+                                    radius: 30,
+                                    child: FittedBox(
+                                      child: Image.asset(
+                                        taskIcons[record['task']] ?? 'assets/grass.png',
+                                        fit: BoxFit.contain,
+                                        width: 150,
+                                        height: 150,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    '備註：${record['note']!.isEmpty ? '-' : record['note']}',
+                                    record['task'] ?? '',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('關閉'),
-                                ),
-                              ],
                             ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: [
-                          // 空出日期欄位的寬度，讓對齊
-                          const Expanded(flex: 2, child: SizedBox()),
 
-                          //農作物
-                          Expanded(flex: 2, child: Text(record['crops']!)),
+                            //田區代號
+                            Expanded(flex: 2, child: Text(record['field'] ?? '')),
 
-                          // 工作項目
-                          Expanded(
-                            flex: 2,
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.green[100],
-                                  radius: 30,
-                                  child: FittedBox(
-                                    child: Image.asset(
-                                      taskIcons[record['task']] ??
-                                          'assets/grass.png',
-                                      fit: BoxFit.contain,
-                                      width: 150,
-                                      height: 150,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  record['task']!,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            //備註
+                            Expanded(
+                              flex: 2,
+                              child: Text(record['note']!.isEmpty ? '-' : record['note']!),
                             ),
-                          ),
-
-                          //田區代號
-                          Expanded(flex: 2, child: Text(record['field']!)),
-
-                          //備註
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              record['note']!.isEmpty ? '-' : record['note']!,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
