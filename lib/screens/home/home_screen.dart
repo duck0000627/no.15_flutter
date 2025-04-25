@@ -14,17 +14,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // 模擬分組資料：以日期為 key，對應的工作紀錄為 value（List）
   final Map<String, List<Map<String, String>>> groupedRecords = {
     '111-06-10': [
-      {'task': '防病蟲害', 'field': 'D1~D3', 'note': ''},
-      {'task': '除草', 'field': 'D1~D3', 'note': '人工'},
-      {'task': '除草', 'field': 'D1~D3', 'note': '機器'},
+      {'crops' : '黑豆', 'task': '防病蟲害', 'field': 'D1~D3', 'note': ''},
+      {'crops' : '黑豆', 'task': '除草', 'field': 'D1~D3', 'note': '人工'},
+      {'crops' : '黑豆', 'task': '除草', 'field': 'D1~D3', 'note': '機器'},
     ],
     '111-06-01': [
-      {'task': '施肥', 'field': 'D1~D3', 'note': ''},
-      {'task': '灌溉', 'field': 'D1~D6', 'note': ''},
+      {'crops' : '黃豆', 'task': '施肥', 'field': 'D1~D3', 'note': ''},
+      {'crops' : '黃豆', 'task': '灌溉', 'field': 'D1~D6', 'note': ''},
     ],
     '111-05-01': [
-      {'task': '播種', 'field': 'D1~D6', 'note': ''},
-      {'task': '整地', 'field': 'D1~D6', 'note': ''},
+      {'crops' : '黑豆', 'task': '播種', 'field': 'D1~D6', 'note': ''},
+      {'crops' : '黑豆', 'task': '整地', 'field': 'D1~D6', 'note': ''},
     ],
   };
 
@@ -43,13 +43,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(flex: 2,
                     child: Text(
                         '日期', style: TextStyle(fontWeight: FontWeight.bold))),
-                Expanded(flex: 3,
+                Expanded(flex: 2,
+                    child: Text(
+                        '農作物', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 2,
                     child: Text('工作項目',
                         style: TextStyle(fontWeight: FontWeight.bold))),
                 Expanded(flex: 2,
                     child: Text('田區代號',
                         style: TextStyle(fontWeight: FontWeight.bold))),
-                Expanded(flex: 3,
+                Expanded(flex: 2,
                     child: Text(
                         '備註', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
@@ -82,9 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         // 空出日期欄位的寬度，讓對齊
                         const Expanded(flex: 2, child: SizedBox()),
 
+                        //農作物
+                        Expanded(
+                            flex: 2,
+                            child: Text(record['crops']!)),
+
                         // 工作項目
                         Expanded(
-                          flex: 3,
+                          flex: 2,
                           child: Row(
                             children: [
                               CircleAvatar(
@@ -107,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         //備註
                         Expanded(
-                          flex: 3,
+                          flex: 2,
                           child: Text(
                               record['note']!.isEmpty ? '-' : record['note']!),
                         ),
@@ -135,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               groupedRecords.putIfAbsent(date, () => []);
               groupedRecords[date]!.add({
+                'crops' : newRecord['crops']!,
                 'task': newRecord['task']!,
                 'field': newRecord['field']!,
                 'note': newRecord['note']!,

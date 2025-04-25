@@ -11,10 +11,16 @@ class AddRecordScreen extends StatefulWidget {
 
 class _AddRecordScreenState extends State<AddRecordScreen> {
   final _formKey = GlobalKey<FormState>();
+  String _crops = '';
   String _task = '';
   String _field = '';
   String _note = '';
   DateTime _selectedDate = DateTime.now();
+
+  final List<String> _cropsOptions = [
+    '黃豆',
+    '黑豆',
+  ];
 
   final List<String> _taskOptions = [
     '播種',
@@ -25,6 +31,15 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
     '防病蟲害',
     '採收',
     '其他',
+  ];
+
+  final List<String> _fieldOptions = [
+    'A1',
+    'A2',
+    'A3',
+    'A4',
+    'A5',
+    'A6',
   ];
 
 
@@ -64,6 +79,25 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                   TextButton(onPressed: _pickDate, child: const Text('選擇日期')),
                 ],
               ),
+
+              //農作物
+              DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: '農作物'),
+                  value: _crops.isNotEmpty ? _crops : null,
+                  items: _cropsOptions.map((task){
+                    return DropdownMenuItem<String>(
+                        value: task,
+                        child: Text(task),
+                    );
+                  }).toList(),
+                  onChanged: (value){
+                    setState(() {
+                      _crops = value ?? '';
+                    });
+                  },
+                onSaved: (value) => _crops = value ?? '',
+              ),
+
               //工作項目
               DropdownButtonFormField<String>(
                   decoration: const InputDecoration(labelText: '工作項目'),
@@ -82,8 +116,20 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                 onSaved: (value) => _task = value ?? '',
               ),
               //田區代號
-              TextFormField(
-                decoration: const InputDecoration(labelText: '田區代號'),
+              DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: '田區代號'),
+                  value: _field.isNotEmpty ? _field : null,
+                  items: _fieldOptions.map((task){
+                    return DropdownMenuItem<String>(
+                        value: task,
+                        child: Text(task),
+                    );
+                  }).toList(),
+                  onChanged: (value){
+                    setState(() {
+                      _field = value ?? '';
+                    });
+                  },
                 onSaved: (value) => _field = value ?? '',
               ),
               //備註
@@ -97,6 +143,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                   _formKey.currentState?.save();
                   Navigator.pop(context,{
                     'date': formattedDate,
+                    'crops' : _crops,
                     'task' : _task,
                     'field' : _field,
                     'note' : _note,
