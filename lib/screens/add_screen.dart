@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:no15/database_helper.dart';
 
 class AddRecordScreen extends StatefulWidget {
   const AddRecordScreen({super.key});
@@ -139,15 +140,26 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: (){
+                onPressed: () async {
                   _formKey.currentState?.save();
-                  Navigator.pop(context,{
+
+                  final newRecord = {
                     'date': formattedDate,
-                    'crops' : _crops,
-                    'task' : _task,
-                    'field' : _field,
-                    'note' : _note,
-                  });
+                    'crops': _crops,
+                    'task': _task,
+                    'field': _field,
+                    'note': _note,
+                  };
+
+                  try{
+                    // 先存進資料庫
+                    await DatabaseHelper.instance.insertRecord(newRecord);
+                    // 再跳回上一頁
+                    Navigator.pop(context, true); // 回傳 true 表示有新增
+                  }catch (e){
+                    print('新增失敗:$e');
+                  }
+
                 },
                 child: const Text('save'),),
             ],

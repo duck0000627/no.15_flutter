@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:no15/database_helper.dart';
 
 import '../add_screen.dart';
 import 'record_detail_dialog.dart';
@@ -12,21 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // 模擬分組資料：以日期為 key，對應的工作紀錄為 value（List）
-  final Map<String, List<Map<String, String>>> groupedRecords = {
-    '111-06-10': [
-      {'crops': '黑豆', 'task': '防病蟲害', 'field': 'D1~D3', 'note': ''},
-      {'crops': '黑豆', 'task': '除草', 'field': 'D1~D3', 'note': '人工'},
-      {'crops': '黑豆', 'task': '除草', 'field': 'D1~D3', 'note': '機器'},
-    ],
-    '111-06-01': [
-      {'crops': '黃豆', 'task': '施肥', 'field': 'D1~D3', 'note': ''},
-      {'crops': '黃豆', 'task': '灌溉', 'field': 'D1~D6', 'note': ''},
-    ],
-    '111-05-01': [
-      {'crops': '黑豆', 'task': '播種', 'field': 'D1~D6', 'note': ''},
-      {'crops': '黑豆', 'task': '整地', 'field': 'D1~D6', 'note': ''},
-    ],
-  };
+  Map<String, List<Map<String, String>>> groupedRecords = {};
 
   final Map<String, String> taskIcons = {
     '播種': 'assets/seed.png',
@@ -36,6 +23,39 @@ class _HomeScreenState extends State<HomeScreen> {
     '除草': 'assets/grass.png',
     '防病蟲害': 'assets/worm.png',
   };
+
+  //APP一打開，就自動去拿最新資料
+  @override
+  void initState() {
+    super.initState();
+    _loadRecords();
+  }
+
+  Future<void> _loadRecords() async{
+    // 從資料庫抓資料
+    final records = await DatabaseHelper.instance.getRecords();
+
+    //整理資料
+    Map<String, List<Map<String, String>>> newGroupedRecords = {};
+
+    for (var record in records) {
+      final date = record['date'] as String; // 日期
+      if (!newGroupedRecords.containsKey(date)) {
+        newGroupedRecords[date] = [];
+      }
+      newGroupedRecords[date]!.add({
+        'crops': record['crops'] as String,
+        'task': record['task'] as String,
+        'field': record['field'] as String? ?? '',
+        'note': record['note'] as String? ?? '',
+      });
+    }
+
+    setState(() {
+      groupedRecords = newGroupedRecords; // 更新畫面
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +70,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: const [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '日期',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
+                // Expanded(
+                //   flex: 2,
+                //   child: Text(
+                //     '日期',
+                //     style: TextStyle(fontWeight: FontWeight.bold),
+                //   ),
+                // ),
                 Expanded(
                   flex: 2,
                   child: Text(
@@ -124,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         child: Row(
                           children: [
-                            const Expanded(flex: 2, child: SizedBox()),
+                            // const Expanded(flex: 2, child: SizedBox()),
 
                             //農作物
                             Expanded(flex: 2, child: Text(record['crops'] ?? '')),
@@ -136,13 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   CircleAvatar(
                                     backgroundColor: Colors.green[100],
-                                    radius: 30,
+                                    radius: 10, //圖形半徑
                                     child: FittedBox(
                                       child: Image.asset(
                                         taskIcons[record['task']] ?? 'assets/grass.png',
                                         fit: BoxFit.contain,
-                                        width: 150,
-                                        height: 150,
+                                        width: 20,
+                                        height: 20,
                                       ),
                                     ),
                                   ),
@@ -178,21 +198,12 @@ class _HomeScreenState extends State<HomeScreen> {
       //新增按鈕
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final newRecord = await Navigator.push(
+          final isAdd = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddRecordScreen()),
           );
-          if (newRecord != null) {
-            final date = newRecord['date']!;
-            setState(() {
-              groupedRecords.putIfAbsent(date, () => []);
-              groupedRecords[date]!.add({
-                'crops': newRecord['crops']!,
-                'task': newRecord['task']!,
-                'field': newRecord['field']!,
-                'note': newRecord['note']!,
-              });
-            });
+          if (isAdd == true) {
+            await _loadRecords(); // 重新讀取資料並更新畫面
           }
         },
         child: FittedBox(
