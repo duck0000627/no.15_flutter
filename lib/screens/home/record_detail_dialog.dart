@@ -11,7 +11,7 @@ final Map<String, String> taskIcons = {
 
 void showRecordDetailDialog(
   BuildContext context,
-  Map<String, String> record,
+  Map<String, dynamic> record,
   String date,
 ) {
   showDialog(
