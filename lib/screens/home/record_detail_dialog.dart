@@ -138,6 +138,8 @@ Future<bool?> showRecordDetailDialog(
                       const SizedBox(height: 12),
 
                       Row(
+                        //換行時對齊開頭
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             '備註：',
@@ -146,7 +148,14 @@ Future<bool?> showRecordDetailDialog(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(record['note']!.isEmpty ? '-' : record['note']!),
+                          //讓備註區域彈性擴展
+                          Expanded(
+                            child: Text(
+                              record['note']!.isEmpty ? '-' : record['note']!,
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
+                            ),
+                          ),
                         ],
                       ),
                     ],
