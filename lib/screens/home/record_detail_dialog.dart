@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'home_screen.dart';
+
+import '../../database_helper.dart';
 
 final Map<String, String> taskIcons = {
   '播種': 'assets/seed.png',
@@ -9,12 +12,12 @@ final Map<String, String> taskIcons = {
   '防病蟲害': 'assets/worm.png',
 };
 
-void showRecordDetailDialog(
+Future<bool?> showRecordDetailDialog(
   BuildContext context,
   Map<String, dynamic> record,
   String date,
 ) {
-  showDialog(
+  return showDialog<bool>(
     context: context,
     builder:
         (context) => Dialog(
@@ -41,8 +44,42 @@ void showRecordDetailDialog(
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Row(
-                      children: const [
-                        Icon(Icons.delete, color: Colors.green),
+                      children: [
+                        IconButton(
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    title: const Text('確認刪除'),
+                                    content: const Text('確定要刪除這筆紀錄嗎？'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, false),
+                                        child: const Text('取消'),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, true),
+                                        child: const Text('刪除'),
+                                      ),
+                                    ],
+                                  ),
+                            );
+
+                            if (confirm == true) {
+                              final int id = int.parse(
+                                record['id'],
+                              ); // 需要在 record 中有 id 欄位
+                              await DatabaseHelper.instance.deleteRecord(id);
+                              Navigator.pop(context, true); // 關閉詳細對話框並通知外層刷新資料
+                            } else {
+                              print('刪除失敗');
+                            }
+                          },
+                          icon: const Icon(Icons.delete, color: Colors.green),
+                        ),
                         SizedBox(width: 8),
                         Icon(Icons.edit, color: Colors.green),
                       ],
@@ -88,7 +125,13 @@ void showRecordDetailDialog(
 
                       Row(
                         children: [
-                          const Text('田區：', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                          const Text(
+                            '田區：',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           Text(record['field'] ?? ''),
                         ],
                       ),
@@ -96,11 +139,16 @@ void showRecordDetailDialog(
 
                       Row(
                         children: [
-                          const Text('備註：', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                          const Text(
+                            '備註：',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           Text(record['note']!.isEmpty ? '-' : record['note']!),
                         ],
                       ),
-
                     ],
                   ),
                 ),

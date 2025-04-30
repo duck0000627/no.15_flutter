@@ -44,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
         newGroupedRecords[date] = [];
       }
       newGroupedRecords[date]!.add({
+        'id': record['id'].toString(),
         'crops': record['crops'] as String,
         'task': record['task'] as String,
         'field': record['field'] as String? ?? '',
@@ -70,13 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: const [
-                // Expanded(
-                //   flex: 2,
-                //   child: Text(
-                //     '日期',
-                //     style: TextStyle(fontWeight: FontWeight.bold),
-                //   ),
-                // ),
                 Expanded(
                   flex: 2,
                   child: Text(
@@ -135,8 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Material(
                     color: Colors.transparent, // 不設定會預設白底
                     child: InkWell(
-                      onTap: () {
-                        showRecordDetailDialog(context, record, entry.key);
+                      onTap: () async {
+                        final isDelete = await showRecordDetailDialog(context, record, entry.key);
+                        if(isDelete == true){
+                          await _loadRecords();
+                        }
                       },
                       hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
                       splashColor: Colors.green[100], // 點擊時的水波紋顏色
