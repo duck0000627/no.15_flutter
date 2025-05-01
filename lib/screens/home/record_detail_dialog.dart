@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:no15/screens/add_screen.dart';
 import 'home_screen.dart';
+
 
 import '../../database_helper.dart';
 
@@ -45,6 +47,7 @@ Future<bool?> showRecordDetailDialog(
                     ),
                     Row(
                       children: [
+                        //刪除按鈕
                         IconButton(
                           onPressed: () async {
                             final confirm = await showDialog<bool>(
@@ -81,7 +84,20 @@ Future<bool?> showRecordDetailDialog(
                           icon: const Icon(Icons.delete, color: Colors.green),
                         ),
                         SizedBox(width: 8),
-                        Icon(Icons.edit, color: Colors.green),
+                        //編輯按鈕
+                        IconButton(
+                            onPressed: () async{
+                              final updated = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AddRecordScreen(record: record)),
+                              );
+                              if(updated == true){
+                                await DatabaseHelper.instance.printAllRecords();
+                                Navigator.pop(context, true);
+                              }
+                            },
+                            icon: Icon(Icons.edit, color: Colors.green),
+                        ),
                       ],
                     ),
                   ],

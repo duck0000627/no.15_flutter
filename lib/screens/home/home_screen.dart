@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       newGroupedRecords[date]!.add({
         'id': record['id'].toString(),
+        'date': date,
         'crops': record['crops'] as String,
         'task': record['task'] as String,
         'field': record['field'] as String? ?? '',

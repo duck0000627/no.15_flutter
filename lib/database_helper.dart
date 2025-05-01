@@ -42,11 +42,27 @@ class DatabaseHelper {
     final db = await instance.database;
     return await db.query('records', orderBy: 'date DESC');
   }
+  //修改
+  Future<int> updateRecord(int id, Map<String, dynamic> record) async{
+    final db = await instance.database;
+    return await db.update('records', record, where: 'id = ?', whereArgs: [id],);
+  }
+
   //刪除
   Future<int> deleteRecord(int id) async {
     final db = await instance.database;
     return await db.delete('records', where: 'id = ?', whereArgs: [id]);
   }
+
+  //print data
+  Future<void> printAllRecords() async {
+    final db = await instance.database;
+    final result = await db.query('records');
+    for (var row in result) {
+      print(row);
+    }
+  }
+
 
   Future close() async {
     final db = await instance.database;
