@@ -155,29 +155,36 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  _formKey.currentState?.save();
+                  if(_crops != '' && _task != '' && _field != '') {
+                    _formKey.currentState?.save();
 
-                  final newRecord = {
-                    'date': formattedDate,
-                    'crops': _crops,
-                    'task': _task,
-                    'field': _field,
-                    'note': _note,
-                  };
+                    final newRecord = {
+                      'date': formattedDate,
+                      'crops': _crops,
+                      'task': _task,
+                      'field': _field,
+                      'note': _note,
+                    };
 
-                  try {
-                    if (widget.record == null) {
-                      // 沒資料的話就新增，存進資料庫
-                      await DatabaseHelper.instance.insertRecord(newRecord);
-                    }else{
-                      //編輯資料
-                      final int id = int.parse(widget.record!['id']);
-                      await DatabaseHelper.instance.updateRecord(id, newRecord);
+                    try {
+                      if (widget.record == null) {
+                        // 沒資料的話就新增，存進資料庫
+                        await DatabaseHelper.instance.insertRecord(newRecord);
+                      } else {
+                        //編輯資料
+                        final int id = int.parse(widget.record!['id']);
+                        await DatabaseHelper.instance.updateRecord(
+                            id, newRecord);
+                      }
+                      // 再跳回上一頁，回傳 true 表示有更動
+                      Navigator.pop(context, true);
+                    } catch (e) {
+                      print('新增失敗:$e');
                     }
-                    // 再跳回上一頁，回傳 true 表示有更動
-                    Navigator.pop(context, true);
-                  } catch (e) {
-                    print('新增失敗:$e');
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('請選擇所有選項')),
+                    );
                   }
                 },
                 child: Text(widget.record == null ? '儲存' : '更新'),
