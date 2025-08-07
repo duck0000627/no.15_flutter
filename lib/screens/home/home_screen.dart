@@ -64,6 +64,31 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.green[100],
       appBar: AppBar(title: const Text('農作物紀錄'), backgroundColor: Colors.green),
+      drawer: Drawer(
+        child: Material(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                  child: Text('選單')
+              ),
+              ListTile(
+                title: Text('農場工作紀錄'),
+                onTap: (){
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('肥料資材使用紀錄'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+
+            ],
+          ),
+        ),
+      ),
       body: ListView(
         children: [
           //標題
