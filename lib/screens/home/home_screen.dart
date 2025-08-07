@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:no15/database_helper.dart';
+import 'package:no15/screens/home/muck_screen.dart';
 
 import '../add_screen.dart';
 import 'record_detail_dialog.dart';
@@ -76,12 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Text('農場工作紀錄'),
                 onTap: (){
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
                 },
               ),
               ListTile(
                 title: Text('肥料資材使用紀錄'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MuckScreen()),
+                  );
                 },
               ),
 
