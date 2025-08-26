@@ -54,6 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
+    //測試用
+    // print(newGroupedRecords);
+
     setState(() {
       groupedRecords = newGroupedRecords; // 更新畫面
     });
