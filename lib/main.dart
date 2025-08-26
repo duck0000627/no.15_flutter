@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:no15/screens/splash/splash_screen.dart';
 
-void main() {
+import 'database_helper.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 🔹 啟動 App 前先打開資料庫
+  await DatabaseHelper.instance.database;
   runApp(const MyApp());
 }
 

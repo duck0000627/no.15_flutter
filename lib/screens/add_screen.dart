@@ -19,6 +19,12 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   String _note = '';
   DateTime _selectedDate = DateTime.now();
 
+  // 新增肥料相關狀態
+  bool _fertilizerUsed = false;
+  String _fertilizerType = '';
+  String _fertilizerAmount = '';
+  String _fertilizerUnit = '';
+
   final List<String> _cropsOptions = ['黃豆', '黑豆'];
 
   final List<String> _taskOptions = [
@@ -34,6 +40,8 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
 
   final List<String> _fieldOptions = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
 
+  final List<String> _fertilizerUnits = ['公斤', '克', '包'];
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +51,10 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
       _task = record['task'] ?? '';
       _field = record['field'] ?? '';
       _note = record['note'] ?? '';
+      _fertilizerUsed = (record['fertilizer_used'] ?? 0) == 1;
+      _fertilizerType = record['fertilizer_type'] ?? '';
+      _fertilizerAmount = record['fertilizer_amount']?.toString() ?? '';
+      _fertilizerUnit = record['fertilizer_unit'] ?? '';
 
       // 將民國格式轉回西元 DateTime
       final parts = (record['date'] as String).split('-');
@@ -81,7 +93,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
               // 日期選擇器
               Row(
@@ -128,6 +140,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                 },
                 onSaved: (value) => _task = value ?? '',
               ),
+
               //田區代號
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: '田區代號'),
@@ -146,13 +159,53 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                 },
                 onSaved: (value) => _field = value ?? '',
               ),
+
               //備註
               TextFormField(
                 decoration: const InputDecoration(labelText: '備註'),
                 initialValue: _note,
                 onSaved: (value) => _note = value ?? '',
               ),
+
               const SizedBox(height: 20),
+              const Divider(),
+
+              // 是否使用肥料
+              SwitchListTile(
+                title: const Text("是否使用肥料"),
+                value: _fertilizerUsed,
+                onChanged: (val) {
+                  setState(() {
+                    _fertilizerUsed = val;
+                  });
+                },
+              ),
+
+              if (_fertilizerUsed) ...[
+                TextFormField(
+                  decoration: const InputDecoration(labelText: '肥料種類'),
+                  initialValue: _fertilizerType,
+                  onSaved: (v) => _fertilizerType = v ?? '',
+                ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: '肥料數量'),
+                  keyboardType: TextInputType.number,
+                  initialValue: _fertilizerAmount,
+                  onSaved: (v) => _fertilizerAmount = v ?? '',
+                ),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: '單位'),
+                  value: _fertilizerUnit.isNotEmpty ? _fertilizerUnit : null,
+                  items: _fertilizerUnits
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _fertilizerUnit = v ?? ''),
+                  onSaved: (v) => _fertilizerUnit = v ?? '',
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
               ElevatedButton(
                 onPressed: () async {
                   if(_crops != '' && _task != '' && _field != '') {
@@ -164,6 +217,13 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                       'task': _task,
                       'field': _field,
                       'note': _note,
+                      'fertilizer_used': _fertilizerUsed ? 1 : 0,
+                      'fertilizer_type': _fertilizerUsed ? _fertilizerType : null,
+                      'fertilizer_amount': _fertilizerUsed
+                          ? double.tryParse(_fertilizerAmount)
+                          : null,
+                      'fertilizer_unit':
+                      _fertilizerUsed ? _fertilizerUnit : null,
                     };
 
                     try {

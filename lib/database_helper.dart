@@ -17,7 +17,12 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -28,10 +33,26 @@ class DatabaseHelper {
         crops TEXT NOT NULL,
         task TEXT NOT NULL,
         field TEXT,
-        note TEXT
+        note TEXT,
+        fertilizer_used INTEGER DEFAULT 0, 
+        fertilizer_type TEXT,
+        fertilizer_amount REAL,
+        fertilizer_unit TEXT
       )
     ''');
   }
+
+  // 升級資料表 (舊安裝升級補欄位)
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // ✅ 檢查並新增缺少的欄位
+      await db.execute("ALTER TABLE records ADD COLUMN fertilizer_used INTEGER DEFAULT 0");
+      await db.execute("ALTER TABLE records ADD COLUMN fertilizer_type TEXT");
+      await db.execute("ALTER TABLE records ADD COLUMN fertilizer_amount REAL");
+      await db.execute("ALTER TABLE records ADD COLUMN fertilizer_unit TEXT");
+    }
+  }
+
   //新增
   Future<int> insertRecord(Map<String, dynamic> record) async {
     final db = await instance.database;
