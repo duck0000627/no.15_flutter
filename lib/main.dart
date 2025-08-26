@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:no15/screens/splash/splash_screen.dart';
+import 'package:no15/screens/splash_screen.dart';
 
 import 'database_helper.dart';
 

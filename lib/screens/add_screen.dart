@@ -88,7 +88,8 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.record == null ? '新增紀錄' : '編輯紀錄')),
+      backgroundColor: Colors.green[100],
+      appBar: AppBar(title: Text(widget.record == null ? '新增紀錄' : '編輯紀錄'), backgroundColor: Colors.green),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

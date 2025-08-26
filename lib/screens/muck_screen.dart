@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:no15/screens/home/record_detail_dialog.dart';
+import 'package:no15/widgets/record_detail_dialog.dart';
 
-import '../../database_helper.dart';
-import '../add_screen.dart';
+import '../database_helper.dart';
+import 'add_screen.dart';
 import 'home_screen.dart';
 
 class MuckScreen extends StatefulWidget{
@@ -125,7 +125,7 @@ class _MuckScreenState extends State<MuckScreen>{
                 Expanded(
                   flex: 3,
                   child: Text(
-                    '施肥別',
+                    '施肥量',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),

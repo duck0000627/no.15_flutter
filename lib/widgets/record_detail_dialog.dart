@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:no15/screens/add_screen.dart';
 
 
-import '../../database_helper.dart';
+import '../database_helper.dart';
 
 final Map<String, String> taskIcons = {
   '播種': 'assets/seed.png',

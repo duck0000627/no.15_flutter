@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:no15/database_helper.dart';
-import 'package:no15/screens/home/muck_screen.dart';
+import 'package:no15/screens/muck_screen.dart';
 
-import '../add_screen.dart';
-import 'record_detail_dialog.dart';
+import 'add_screen.dart';
+import '../widgets/record_detail_dialog.dart';
+
+void printAllRecordsSimple() async {  //看SQLite資料
+  final records = await DatabaseHelper.instance.getRecords();
+  print(records); // 一行就印出整個資料表
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    printAllRecordsSimple();  //看SQLite資料
     _loadRecords();
   }
 
@@ -248,3 +254,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
