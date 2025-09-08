@@ -173,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Material(
                     color: Colors.transparent, // 不設定會預設白底
                     child: InkWell(
+                      //點擊後
                       onTap: () async {
                         final isDelete = await showRecordDetailDialog(context, record, entry.key);
                         if(isDelete == true){

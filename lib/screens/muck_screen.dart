@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:no15/widgets/record_detail_dialog.dart';
 
 import '../database_helper.dart';
 import 'add_screen.dart';
@@ -31,10 +30,21 @@ class _MuckScreenState extends State<MuckScreen>{
     Map<String, List<Map<String, String>>> newGroupedRecords = {};
 
     for (var record in records) {
+      // 判斷：如果 fertilizer_type 與 fertilizer_amount 都是空，就跳過
+      final fertilizerType = record['fertilizer_type'] as String?;
+      final fertilizerAmount = record['fertilizer_amount']?.toString();
+
+      if ((fertilizerType == null || fertilizerType.isEmpty) &&
+          (fertilizerAmount == null || fertilizerAmount.isEmpty)) {
+        continue; // ← 直接跳過這筆
+      }
+
       final date = record['date'] as String; // 日期
+
       if (!newGroupedRecords.containsKey(date)) {
         newGroupedRecords[date] = [];
       }
+
       newGroupedRecords[date]!.add({
         'id': record['id'].toString(),
         'date': date,
@@ -159,12 +169,6 @@ class _MuckScreenState extends State<MuckScreen>{
                   return Material(
                     color: Colors.transparent, // 不設定會預設白底
                     child: InkWell(
-                      onTap: () async {
-                        final isDelete = await showRecordDetailDialog(context, record, entry.key);
-                        if(isDelete == true){
-                          await _loadRecords();
-                        }
-                      },
                       hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
                       splashColor: Colors.green[100], // 點擊時的水波紋顏色
                       child: Padding(
