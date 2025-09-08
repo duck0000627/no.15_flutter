@@ -24,9 +24,10 @@
 
 ## 畫面截圖
 <p align="center">
-  <img width="216" height="456" alt="Screenshot_20250908_160600" src="https://github.com/user-attachments/assets/afd646e1-c570-47a3-a51f-2a67a24290af" />
-  <img width="1080" height="2280" alt="Screenshot_20250908_161233" src="https://github.com/user-attachments/assets/c1097b85-355d-4533-91c9-7c2f97b3edfc" />
-  <img width="1080" height="2280" alt="Screenshot_20250908_161302" src="https://github.com/user-attachments/assets/ec7efc84-69c7-46b3-a593-4463b342ccfa" />
+  <img width="216" height="456" alt="Screenshot_20250908_163759" src="https://github.com/user-attachments/assets/551a416d-1d93-4926-b70c-c38b59ced919" />
+  <img width="216" height="456" alt="Screenshot_20250908_164329" src="https://github.com/user-attachments/assets/aba6d558-9dd2-4708-b6ac-9bc1ae3977c5" />
+  <img width="216" height="456" alt="Screenshot_20250908_161233" src="https://github.com/user-attachments/assets/c1097b85-355d-4533-91c9-7c2f97b3edfc" />
+  <img width="216" height="456" alt="Screenshot_20250908_164209" src="https://github.com/user-attachments/assets/de714831-4bc4-4a62-958b-f49e531edaca" />
 </p>
 
 
