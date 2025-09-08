@@ -5,7 +5,8 @@ import 'package:no15/screens/muck_screen.dart';
 import 'add_screen.dart';
 import '../widgets/record_detail_dialog.dart';
 
-void printAllRecordsSimple() async {  //看SQLite資料
+void printAllRecordsSimple() async {
+  //看SQLite資料
   final records = await DatabaseHelper.instance.getRecords();
   print(records); // 一行就印出整個資料表
 }
@@ -34,11 +35,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    printAllRecordsSimple();  //看SQLite資料
+    printAllRecordsSimple(); //看SQLite資料
     _loadRecords();
   }
 
-  Future<void> _loadRecords() async{
+  Future<void> _loadRecords() async {
     // 從資料庫抓資料
     final records = await DatabaseHelper.instance.getRecords();
 
@@ -66,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       groupedRecords = newGroupedRecords; // 更新畫面
     });
-
   }
 
   @override
@@ -79,12 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              DrawerHeader(
-                  child: Text('選單')
-              ),
+              DrawerHeader(child: Text('選單')),
               ListTile(
                 title: Text('農場工作紀錄'),
-                onTap: (){
+                onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -102,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-
             ],
           ),
         ),
@@ -170,65 +167,90 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 //每筆資料
                 ...entry.value.map((record) {
-                  return Material(
-                    color: Colors.transparent, // 不設定會預設白底
-                    child: InkWell(
-                      //點擊後
-                      onTap: () async {
-                        final isDelete = await showRecordDetailDialog(context, record, entry.key);
-                        if(isDelete == true){
-                          await _loadRecords();
-                        }
-                      },
-                      hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
-                      splashColor: Colors.green[100], // 點擊時的水波紋顏色
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Row(
-                          children: [
-                            // const Expanded(flex: 2, child: SizedBox()),
+                  return Column(
+                    children: [
+                      Material(
+                        color: Colors.transparent, // 不設定會預設白底
+                        child: InkWell(
+                          //點擊後
+                          onTap: () async {
+                            final isDelete = await showRecordDetailDialog(
+                              context,
+                              record,
+                              entry.key,
+                            );
+                            if (isDelete == true) {
+                              await _loadRecords();
+                            }
+                          },
+                          hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
+                          splashColor: Colors.green[100], // 點擊時的水波紋顏色
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                // const Expanded(flex: 2, child: SizedBox()),
 
-                            //農作物
-                            Expanded(flex: 2, child: Text(record['crops'] ?? '')),
+                                //農作物
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(record['crops'] ?? ''),
+                                ),
 
-                            // 工作項目
-                            Expanded(
-                              flex: 2,
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.green[100],
-                                    radius: 10, //圖形半徑
-                                    child: FittedBox(
-                                      child: Image.asset(
-                                        taskIcons[record['task']] ?? 'assets/grass.png',
-                                        fit: BoxFit.contain,
-                                        width: 20,
-                                        height: 20,
+                                // 工作項目
+                                Expanded(
+                                  flex: 2,
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.green[100],
+                                        radius: 10, //圖形半徑
+                                        child: FittedBox(
+                                          child: Image.asset(
+                                            taskIcons[record['task']] ??
+                                                'assets/grass.png',
+                                            fit: BoxFit.contain,
+                                            width: 20,
+                                            height: 20,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        record['task'] ?? '',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    record['task'] ?? '',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+
+                                //田區代號
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(record['field'] ?? ''),
+                                ),
+
+                                //備註
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    record['note']!.isEmpty
+                                        ? '-'
+                                        : record['note']!,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-
-                            //田區代號
-                            Expanded(flex: 2, child: Text(record['field'] ?? '')),
-
-                            //備註
-                            Expanded(
-                              flex: 2,
-                              child: Text(record['note']!.isEmpty ? '-' : record['note']!),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                      const Divider(height: 1, thickness: 2,),
+                    ],
                   );
                 }).toList(),
               ],
@@ -255,4 +277,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

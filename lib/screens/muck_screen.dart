@@ -4,14 +4,14 @@ import '../database_helper.dart';
 import 'add_screen.dart';
 import 'home_screen.dart';
 
-class MuckScreen extends StatefulWidget{
+class MuckScreen extends StatefulWidget {
   const MuckScreen({super.key});
 
   @override
   State<StatefulWidget> createState() => _MuckScreenState();
 }
 
-class _MuckScreenState extends State<MuckScreen>{
+class _MuckScreenState extends State<MuckScreen> {
   // 模擬分組資料：以日期為 key，對應的工作紀錄為 value（List）
   Map<String, List<Map<String, String>>> groupedRecords = {};
 
@@ -22,7 +22,7 @@ class _MuckScreenState extends State<MuckScreen>{
     _loadRecords();
   }
 
-  Future<void> _loadRecords() async{
+  Future<void> _loadRecords() async {
     // 從資料庫抓資料
     final records = await DatabaseHelper.instance.getRecords();
 
@@ -62,25 +62,25 @@ class _MuckScreenState extends State<MuckScreen>{
     setState(() {
       groupedRecords = newGroupedRecords; // 更新畫面
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green[100],
-      appBar: AppBar(title: const Text('肥料資材使用紀錄'), backgroundColor: Colors.green),
+      appBar: AppBar(
+        title: const Text('肥料資材使用紀錄'),
+        backgroundColor: Colors.green,
+      ),
       drawer: Drawer(
         child: Material(
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              DrawerHeader(
-                  child: Text('選單')
-              ),
+              DrawerHeader(child: Text('選單')),
               ListTile(
                 title: Text('農場工作紀錄'),
-                onTap: (){
+                onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -98,7 +98,6 @@ class _MuckScreenState extends State<MuckScreen>{
                   );
                 },
               ),
-
             ],
           ),
         ),
@@ -166,40 +165,61 @@ class _MuckScreenState extends State<MuckScreen>{
 
                 //每筆資料
                 ...entry.value.map((record) {
-                  return Material(
-                    color: Colors.transparent, // 不設定會預設白底
-                    child: InkWell(
-                      hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
-                      splashColor: Colors.green[100], // 點擊時的水波紋顏色
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Row(
-                          children: [
-                            //農作物
-                            Expanded(flex: 2, child: Text(record['crops'] ?? '')),
+                  return Column(
+                    children: [
+                      Material(
+                        color: Colors.transparent, // 不設定會預設白底
+                        child: InkWell(
+                          hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
+                          splashColor: Colors.green[100], // 點擊時的水波紋顏色
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                //農作物
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(record['crops'] ?? ''),
+                                ),
 
-                            //田區代號
-                            Expanded(flex: 2, child: Text(record['field'] ?? '')),
+                                //田區代號
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(record['field'] ?? ''),
+                                ),
 
-                            //資材名稱
-                            Expanded(flex: 2, child: Text(record['fertilizer_type'] ?? '')),
+                                //資材名稱
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(record['fertilizer_type'] ?? ''),
+                                ),
 
-                            //使用量
-                            Expanded(child: Text(record['fertilizer_amount'] ?? '')),
+                                //使用量
+                                Expanded(
+                                  child: Text(
+                                    record['fertilizer_amount'] ?? '',
+                                  ),
+                                ),
 
-                            //單位
-                            Expanded(child: Text(record['fertilizer_unit'] ?? '')),
-
-                          ],
+                                //單位
+                                Expanded(
+                                  child: Text(record['fertilizer_unit'] ?? ''),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const Divider(height: 1,thickness: 2,),
+                    ],
                   );
                 }).toList(),
               ],
             );
           }).toList(),
-
         ],
       ),
 
@@ -220,6 +240,4 @@ class _MuckScreenState extends State<MuckScreen>{
       ),
     );
   }
-
 }
-
