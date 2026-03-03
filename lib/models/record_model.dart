@@ -5,10 +5,10 @@ class CropRecordModel {
   final String task;
   final String field;
   final String note;
-  final bool fertilizerUsed;
-  final String? fertilizerType;
-  final double? fertilizerAmount;
-  final String? fertilizerUnit;
+  final bool fertilizer_used;
+  final String? fertilizer_type;
+  final double? fertilizer_amount;
+  final String? fertilizer_unit;
 
   CropRecordModel({
     this.id,
@@ -17,10 +17,10 @@ class CropRecordModel {
     required this.task,
     required this.field,
     required this.note,
-    required this.fertilizerUsed,
-    this.fertilizerType,
-    this.fertilizerAmount,
-    this.fertilizerUnit,
+    required this.fertilizer_used,
+    this.fertilizer_type,
+    this.fertilizer_amount,
+    this.fertilizer_unit,
   });
 
   // 將資料庫的 Map 轉換為物件
@@ -32,23 +32,25 @@ class CropRecordModel {
       task: map['task'] ?? '',
       field: map['field'] ?? '',
       note: map['note'] ?? '',
-      fertilizerUsed: map['fertilizerUsed'] == 1,
-      fertilizerType: map['fertilizerType']?.toString(),
-      fertilizerAmount: map['fertilizerAmount']?.toDouble(),
-      fertilizerUnit: map['fertilizerUnit'],
+      fertilizer_used: map['fertilizer_used'] == 1,
+      fertilizer_type: map['fertilizer_type']?.toString(),
+      fertilizer_amount: map['fertilizer_amount'] != null
+          ? double.tryParse(map['fertilizer_amount'].toString())
+          : null,
+      fertilizer_unit: map['fertilizer_unit'],
     );
   }
 
   Map<String,dynamic> toMap() => {
-    'id':id,
+    if (id != null) 'id': id,
     'date':date,
     'crops':crops,
     'task':task,
     'field':field,
     'note':note,
-    'fertilizerUsed':fertilizerUsed ? 1 : 0,
-    'fertilizerType':fertilizerType,
-    'fertilizerAmount':fertilizerAmount,
-    'fertilizerUnit':fertilizerUnit,
+    'fertilizer_used': fertilizer_used ? 1 : 0,
+    'fertilizer_type': fertilizer_type,
+    'fertilizer_amount': fertilizer_amount,
+    'fertilizer_unit': fertilizer_unit,
   };
 }

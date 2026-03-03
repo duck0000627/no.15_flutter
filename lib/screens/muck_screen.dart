@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:no15/models/record_model.dart';
 import 'package:provider/provider.dart';
 
-import '../database_helper.dart';
-import '../view_models/record_view_model.dart';
+import '../models/record_model.dart'; // 請確認路徑是否正確
+import '../view_models/record_view_model.dart'; // 請確認路徑是否正確
 import 'add_screen.dart';
 import 'home_screen.dart';
 
@@ -15,11 +14,12 @@ class MuckScreen extends StatefulWidget {
 }
 
 class _MuckScreenState extends State<MuckScreen> {
-  //APP一打開，就自動去拿最新資料
+
   @override
   void initState() {
     super.initState();
-    // 透過 ViewModel 初始載入
+    // 【這裡不再有舊的 _loadRecords】
+    // 直接透過 ViewModel 讀取最新資料
     Future.microtask(() => context.read<RecordViewModel>().loadRecords());
   }
 
@@ -39,47 +39,43 @@ class _MuckScreenState extends State<MuckScreen> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              DrawerHeader(child: Text('選單')),
+              const DrawerHeader(child: Text('選單')),
               ListTile(
-                title: Text('農場工作紀錄'),
+                title: const Text('農場工作紀錄'),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const HomeScreen()),
                   );
                 },
               ),
               ListTile(
-                title: Text('肥料資材使用紀錄'),
+                title: const Text('肥料資材使用紀錄'),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MuckScreen()),
-                  );
                 },
               ),
             ],
           ),
         ),
       ),
-      body:
-          viewModel.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                children: [
-                  // 1. 標題列
-                  _buildHeader(),
+      // 根據 ViewModel 的狀態決定要顯示載入圈圈還是列表
+      body: viewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+        children: [
+          // 標題列
+          _buildHeader(),
 
-                  // 2. 分組資料 (呼叫 ViewModel 中我們剛寫好的 getter)
-                  ...viewModel.groupedMuckRecords.entries.map((entry) {
-                    return _buildDateGroup(entry.key, entry.value);
-                  }).toList(),
-                ],
-              ),
+          // 分組資料 (呼叫 ViewModel 中已經過濾好肥料的 groupedMuckRecords)
+          ...viewModel.groupedMuckRecords.entries.map((entry) {
+            return _buildDateGroup(entry.key, entry.value);
+          }).toList(),
+        ],
+      ),
 
-      //新增按鈕
+      // 新增按鈕
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final isAdd = await Navigator.push(
@@ -87,7 +83,8 @@ class _MuckScreenState extends State<MuckScreen> {
             MaterialPageRoute(builder: (context) => const AddRecordScreen()),
           );
           if (isAdd == true) {
-            if(context.mounted) context.read<RecordViewModel>().loadRecords(); // 重新讀取資料並更新畫面
+            // 透過 ViewModel 重新讀取資料
+            if(context.mounted) context.read<RecordViewModel>().loadRecords();
           }
         },
         child: FittedBox(
@@ -96,6 +93,8 @@ class _MuckScreenState extends State<MuckScreen> {
       ),
     );
   }
+
+  // ==== 以下為抽離出來的 UI 方法 ====
 
   Widget _buildHeader() {
     return Container(
@@ -116,7 +115,6 @@ class _MuckScreenState extends State<MuckScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 日期欄位
         Container(
           color: Colors.green[200],
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -125,8 +123,6 @@ class _MuckScreenState extends State<MuckScreen> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-
-        // 該日期的每筆肥料資料
         ...records.map((record) {
           return Column(
             children: [
@@ -139,16 +135,12 @@ class _MuckScreenState extends State<MuckScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     child: Row(
                       children: [
-                        // 農作物
                         Expanded(flex: 2, child: Text(record.crops)),
-                        // 田區代號
                         Expanded(flex: 2, child: Text(record.field)),
-                        // 資材名稱
-                        Expanded(flex: 2, child: Text(record.fertilizerType ?? '')),
-                        // 使用量 (數字轉字串)
-                        Expanded(child: Text(record.fertilizerAmount?.toString() ?? '')),
-                        // 單位
-                        Expanded(child: Text(record.fertilizerUnit ?? '')),
+                        Expanded(flex: 2, child: Text(record.fertilizer_type ?? '')),
+                        // 這裡使用 toString() 安全地將 double 轉為字串顯示
+                        Expanded(child: Text(record.fertilizer_amount?.toString() ?? '')),
+                        Expanded(child: Text(record.fertilizer_unit ?? '')),
                       ],
                     ),
                   ),

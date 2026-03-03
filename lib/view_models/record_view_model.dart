@@ -58,7 +58,7 @@ class RecordViewModel extends ChangeNotifier{
 
     _groupedRecords.forEach((date, records) {
       // 針對每一天的紀錄進行過濾
-      final muckRecords = records.where((record) => record.fertilizerUsed).toList();
+      final muckRecords = records.where((record) => record.fertilizer_used).toList();
 
       // 如果這天有過濾出肥料紀錄，才加入最終結果
       if (muckRecords.isNotEmpty) {
