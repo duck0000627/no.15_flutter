@@ -1,9 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:no15/database_helper.dart';
+import 'package:no15/models/record_model.dart';
+import 'package:provider/provider.dart';
+
+import '../view_models/record_view_model.dart';
 
 class AddRecordScreen extends StatefulWidget {
-  final Map<String, dynamic>? record;
+  final CropRecordModel? record;
 
   const AddRecordScreen({super.key, this.record});
 
@@ -26,7 +30,6 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   String _fertilizerUnit = '';
 
   final List<String> _cropsOptions = ['黃豆', '黑豆'];
-
   final List<String> _taskOptions = [
     '播種',
     '施肥',
@@ -37,9 +40,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
     '採收',
     '其他',
   ];
-
   final List<String> _fieldOptions = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
-
   final List<String> _fertilizerUnits = ['公斤', '克', '包'];
 
   @override
@@ -47,17 +48,17 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
     super.initState();
     if (widget.record != null) {
       final record = widget.record!;
-      _crops = record['crops'] ?? '';
-      _task = record['task'] ?? '';
-      _field = record['field'] ?? '';
-      _note = record['note'] ?? '';
-      _fertilizerUsed = (record['fertilizer_used'] ?? 0) == 1;
-      _fertilizerType = record['fertilizer_type'] ?? '';
-      _fertilizerAmount = record['fertilizer_amount']?.toString() ?? '';
-      _fertilizerUnit = record['fertilizer_unit'] ?? '';
+      _crops = record.crops;
+      _task = record.task;
+      _field = record.field;
+      _note = record.note;
+      _fertilizerUsed = record.fertilizerUsed;
+      _fertilizerType = record.fertilizerType ?? '';
+      _fertilizerAmount = record.fertilizerAmount?.toString() ?? '';
+      _fertilizerUnit = record.fertilizerUnit ?? '';
 
       // 將民國格式轉回西元 DateTime
-      final parts = (record['date'] as String).split('-');
+      final parts = record.date.split('-');
       final year = int.parse(parts[0]) + 1911;
       final month = int.parse(parts[1]);
       final day = int.parse(parts[2]);
@@ -89,7 +90,10 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green[100],
-      appBar: AppBar(title: Text(widget.record == null ? '新增紀錄' : '編輯紀錄'), backgroundColor: Colors.green),
+      appBar: AppBar(
+        title: Text(widget.record == null ? '新增紀錄' : '編輯紀錄'),
+        backgroundColor: Colors.green,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -197,9 +201,12 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                 DropdownButtonFormField<String>(
                   decoration: const InputDecoration(labelText: '單位'),
                   value: _fertilizerUnit.isNotEmpty ? _fertilizerUnit : null,
-                  items: _fertilizerUnits
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
+                  items:
+                      _fertilizerUnits
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
                   onChanged: (v) => setState(() => _fertilizerUnit = v ?? ''),
                   onSaved: (v) => _fertilizerUnit = v ?? '',
                 ),
@@ -209,43 +216,48 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
 
               ElevatedButton(
                 onPressed: () async {
-                  if(_crops != '' && _task != '' && _field != '') {
+                  if (_crops != '' && _task != '' && _field != '') {
                     _formKey.currentState?.save();
 
-                    final newRecord = {
-                      'date': formattedDate,
-                      'crops': _crops,
-                      'task': _task,
-                      'field': _field,
-                      'note': _note,
-                      'fertilizer_used': _fertilizerUsed ? 1 : 0,
-                      'fertilizer_type': _fertilizerUsed ? _fertilizerType : null,
-                      'fertilizer_amount': _fertilizerUsed
-                          ? double.tryParse(_fertilizerAmount)
-                          : null,
-                      'fertilizer_unit':
-                      _fertilizerUsed ? _fertilizerUnit : null,
-                    };
+                    final newRecord = CropRecordModel(
+                      id: widget.record?.id,
+                      date: formattedDate,
+                      crops: _crops,
+                      task: _task,
+                      field: _field,
+                      note: _note,
+                      fertilizerUsed: _fertilizerUsed,
+                      fertilizerType: _fertilizerUsed ? _fertilizerType : null,
+                      fertilizerAmount:
+                          _fertilizerUsed
+                              ? double.tryParse(_fertilizerAmount)
+                              : null,
+                      fertilizerUnit: _fertilizerUsed ? _fertilizerUnit : null,
+                    );
 
                     try {
+                      //透過 ViewModel 來處理存檔邏輯
                       if (widget.record == null) {
-                        // 沒資料的話就新增，存進資料庫
-                        await DatabaseHelper.instance.insertRecord(newRecord);
+                        // 新增
+                        await context.read<RecordViewModel>().addRecord(
+                          newRecord,
+                        );
                       } else {
-                        //編輯資料
-                        final int id = int.parse(widget.record!['id']);
-                        await DatabaseHelper.instance.updateRecord(
-                            id, newRecord);
+                        // 編輯
+                        await context.read<RecordViewModel>().updateRecord(
+                          newRecord,
+                        );
                       }
-                      // 再跳回上一頁，回傳 true 表示有更動
-                      Navigator.pop(context, true);
+
+                      // 因為 ViewModel 會通知畫面更新，所以我們只需要返回上一頁就好
+                      if (mounted) Navigator.pop(context, true);
                     } catch (e) {
-                      print('新增失敗:$e');
+                      print('存檔失敗:$e');
                     }
-                  }else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('請選擇所有選項')),
-                    );
+                  } else {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('請選擇所有選項')));
                   }
                 },
                 child: Text(widget.record == null ? '儲存' : '更新'),

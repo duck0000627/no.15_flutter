@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:no15/models/record_model.dart';
+import 'package:provider/provider.dart';
 
 import '../database_helper.dart';
+import '../view_models/record_view_model.dart';
 import 'add_screen.dart';
 import 'home_screen.dart';
 
@@ -12,60 +15,19 @@ class MuckScreen extends StatefulWidget {
 }
 
 class _MuckScreenState extends State<MuckScreen> {
-  // 模擬分組資料：以日期為 key，對應的工作紀錄為 value（List）
-  Map<String, List<Map<String, String>>> groupedRecords = {};
-
   //APP一打開，就自動去拿最新資料
   @override
   void initState() {
     super.initState();
-    _loadRecords();
-  }
-
-  Future<void> _loadRecords() async {
-    // 從資料庫抓資料
-    final records = await DatabaseHelper.instance.getRecords();
-
-    //整理資料
-    Map<String, List<Map<String, String>>> newGroupedRecords = {};
-
-    for (var record in records) {
-      // 判斷：如果 fertilizer_type 與 fertilizer_amount 都是空，就跳過
-      final fertilizerType = record['fertilizer_type'] as String?;
-      final fertilizerAmount = record['fertilizer_amount']?.toString();
-
-      if ((fertilizerType == null || fertilizerType.isEmpty) &&
-          (fertilizerAmount == null || fertilizerAmount.isEmpty)) {
-        continue; // ← 直接跳過這筆
-      }
-
-      final date = record['date'] as String; // 日期
-
-      if (!newGroupedRecords.containsKey(date)) {
-        newGroupedRecords[date] = [];
-      }
-
-      newGroupedRecords[date]!.add({
-        'id': record['id'].toString(),
-        'date': date,
-        'crops': record['crops'] as String,
-        'field': record['field'] as String? ?? '',
-        'fertilizer_type': record['fertilizer_type'] as String? ?? '',
-        'fertilizer_amount': record['fertilizer_amount']?.toString() ?? '',
-        'fertilizer_unit': record['fertilizer_unit'] as String? ?? '',
-      });
-    }
-
-    //測試用
-    // print(newGroupedRecords);
-
-    setState(() {
-      groupedRecords = newGroupedRecords; // 更新畫面
-    });
+    // 透過 ViewModel 初始載入
+    Future.microtask(() => context.read<RecordViewModel>().loadRecords());
   }
 
   @override
   Widget build(BuildContext context) {
+    // 監聽 ViewModel 的變化
+    final viewModel = context.watch<RecordViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.green[100],
       appBar: AppBar(
@@ -102,126 +64,20 @@ class _MuckScreenState extends State<MuckScreen> {
           ),
         ),
       ),
-      body: ListView(
-        children: [
-          //標題
-          Container(
-            color: Colors.green[100],
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: const [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    '農作物',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    '田區',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    '資材名稱',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    '施肥量',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      body:
+          viewModel.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                children: [
+                  // 1. 標題列
+                  _buildHeader(),
 
-          //分組資料
-          ...groupedRecords.entries.map((entry) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //日期欄位
-                Container(
-                  color: Colors.green[200],
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                //每筆資料
-                ...entry.value.map((record) {
-                  return Column(
-                    children: [
-                      Material(
-                        color: Colors.transparent, // 不設定會預設白底
-                        child: InkWell(
-                          hoverColor: Colors.green[80], // 滑鼠懸停時的顏色（Web/桌面用）
-                          splashColor: Colors.green[100], // 點擊時的水波紋顏色
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              children: [
-                                //農作物
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(record['crops'] ?? ''),
-                                ),
-
-                                //田區代號
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(record['field'] ?? ''),
-                                ),
-
-                                //資材名稱
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(record['fertilizer_type'] ?? ''),
-                                ),
-
-                                //使用量
-                                Expanded(
-                                  child: Text(
-                                    record['fertilizer_amount'] ?? '',
-                                  ),
-                                ),
-
-                                //單位
-                                Expanded(
-                                  child: Text(record['fertilizer_unit'] ?? ''),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 1,thickness: 2,),
-                    ],
-                  );
-                }).toList(),
-              ],
-            );
-          }).toList(),
-        ],
-      ),
+                  // 2. 分組資料 (呼叫 ViewModel 中我們剛寫好的 getter)
+                  ...viewModel.groupedMuckRecords.entries.map((entry) {
+                    return _buildDateGroup(entry.key, entry.value);
+                  }).toList(),
+                ],
+              ),
 
       //新增按鈕
       floatingActionButton: FloatingActionButton(
@@ -231,13 +87,78 @@ class _MuckScreenState extends State<MuckScreen> {
             MaterialPageRoute(builder: (context) => const AddRecordScreen()),
           );
           if (isAdd == true) {
-            await _loadRecords(); // 重新讀取資料並更新畫面
+            if(context.mounted) context.read<RecordViewModel>().loadRecords(); // 重新讀取資料並更新畫面
           }
         },
         child: FittedBox(
           child: Image.asset('assets/pen.png', fit: BoxFit.contain),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      color: Colors.green[100],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: const [
+          Expanded(flex: 3, child: Text('農作物', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text('田區', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text('資材名稱', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text('施肥量', style: TextStyle(fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateGroup(String date, List<CropRecordModel> records) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 日期欄位
+        Container(
+          color: Colors.green[200],
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            date,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+
+        // 該日期的每筆肥料資料
+        ...records.map((record) {
+          return Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  hoverColor: Colors.green[80],
+                  splashColor: Colors.green[100],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      children: [
+                        // 農作物
+                        Expanded(flex: 2, child: Text(record.crops)),
+                        // 田區代號
+                        Expanded(flex: 2, child: Text(record.field)),
+                        // 資材名稱
+                        Expanded(flex: 2, child: Text(record.fertilizerType ?? '')),
+                        // 使用量 (數字轉字串)
+                        Expanded(child: Text(record.fertilizerAmount?.toString() ?? '')),
+                        // 單位
+                        Expanded(child: Text(record.fertilizerUnit ?? '')),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(height: 1, thickness: 2,),
+            ],
+          );
+        }).toList(),
+      ],
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:no15/models/record_model.dart';
 import 'package:no15/screens/add_screen.dart';
+import 'package:provider/provider.dart';
 
 
 import '../database_helper.dart';
+import '../view_models/record_view_model.dart';
 
 final Map<String, String> taskIcons = {
   '播種': 'assets/seed.png',
@@ -15,7 +18,7 @@ final Map<String, String> taskIcons = {
 
 Future<bool?> showRecordDetailDialog(
   BuildContext context,
-  Map<String, dynamic> record,
+    CropRecordModel record,
   String date,
 ) {
   return showDialog<bool>(
@@ -71,18 +74,15 @@ Future<bool?> showRecordDetailDialog(
                             );
 
                             if (confirm == true) {
-                              final int id = int.parse(
-                                record['id'],
-                              ); // 需要在 record 中有 id 欄位
-                              await DatabaseHelper.instance.deleteRecord(id);
-                              Navigator.pop(context, true); // 關閉詳細對話框並通知外層刷新資料
-                            } else {
-                              print('刪除失敗');
+                              if (record.id != null) {
+                                await context.read<RecordViewModel>().deleteRecord(record.id!);
+                              }
+                              if(context.mounted) Navigator.pop(context, true);
                             }
                           },
                           icon: const Icon(Icons.delete, color: Colors.green),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         //編輯按鈕
                         IconButton(
                             onPressed: () async{
@@ -91,8 +91,7 @@ Future<bool?> showRecordDetailDialog(
                                 MaterialPageRoute(builder: (context) => AddRecordScreen(record: record)),
                               );
                               if(updated == true){
-                                await DatabaseHelper.instance.printAllRecords();
-                                Navigator.pop(context, true);
+                                if(context.mounted) Navigator.pop(context, true);
                               }
                             },
                             icon: Icon(Icons.edit, color: Colors.green),
@@ -120,7 +119,7 @@ Future<bool?> showRecordDetailDialog(
                             backgroundColor: Colors.green[100],
                             radius: 30,
                             child: Image.asset(
-                              taskIcons[record['task']] ?? 'assets/default.png',
+                              taskIcons[record.task] ?? 'assets/default.png',
                               width: 40,
                               height: 40,
                               fit: BoxFit.contain,
@@ -128,7 +127,7 @@ Future<bool?> showRecordDetailDialog(
                           ),
                           const SizedBox(width: 16),
                           Text(
-                            record['task'] ?? '',
+                            record.task,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -147,7 +146,7 @@ Future<bool?> showRecordDetailDialog(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(record['field'] ?? ''),
+                          Text(record.field),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -166,7 +165,7 @@ Future<bool?> showRecordDetailDialog(
                           //讓備註區域彈性擴展
                           Expanded(
                             child: Text(
-                              record['note']!.isEmpty ? '-' : record['note']!,
+                              record.note.isEmpty ? '-' : record.note,
                               softWrap: true,
                               overflow: TextOverflow.visible,
                             ),

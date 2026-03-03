@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:no15/screens/splash_screen.dart';
+import 'package:no15/view_models/record_view_model.dart';
+import 'package:provider/provider.dart';
 
 import 'database_helper.dart';
 
@@ -7,7 +9,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 🔹 啟動 App 前先打開資料庫
   await DatabaseHelper.instance.database;
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => RecordViewModel())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
