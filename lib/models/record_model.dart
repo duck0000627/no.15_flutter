@@ -1,3 +1,14 @@
+const Map<String, String> taskIcons = {
+  '播種': 'assets/seed.png',
+  '施肥': 'assets/muck.png',
+  '採收': 'assets/harvest.png',
+  '灌溉': 'assets/water.png',
+  '除草': 'assets/grass.png',
+  '防病蟲害': 'assets/worm.png',
+  '整地': 'assets/land.png',
+  '其他': 'assets/other.png',
+};
+
 class CropRecordModel {
   final int? id;
   final String date;
@@ -22,6 +33,12 @@ class CropRecordModel {
     this.fertilizer_amount,
     this.fertilizer_unit,
   });
+
+  //告訴畫面要顯示什麼備註
+  String get displayNote => note.isEmpty ? '-' : note;
+
+  //告訴畫面要載入哪張圖片
+  String get taskIcon => taskIcons[task] ?? 'assets/grass.png';
 
   // 將資料庫的 Map 轉換為物件
   factory CropRecordModel.fromMap(Map<String, dynamic> map) {

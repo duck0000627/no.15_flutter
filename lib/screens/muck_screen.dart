@@ -1,32 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
+import 'package:get/get.dart';
 import '../models/record_model.dart'; // 請確認路徑是否正確
-import '../view_models/record_view_model.dart'; // 請確認路徑是否正確
+import '../view_models/GetxController.dart'; // 請確認路徑是否正確
 import 'add_screen.dart';
 import 'home_screen.dart';
 
-class MuckScreen extends StatefulWidget {
+class MuckScreen extends StatelessWidget {
   const MuckScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MuckScreenState();
-}
-
-class _MuckScreenState extends State<MuckScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-    // 【這裡不再有舊的 _loadRecords】
-    // 直接透過 ViewModel 讀取最新資料
-    Future.microtask(() => context.read<RecordViewModel>().loadRecords());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // 監聽 ViewModel 的變化
-    final viewModel = context.watch<RecordViewModel>();
+    // 🔹 取得 Controller
+    final controller = Get.find<RecordController>();
 
     return Scaffold(
       backgroundColor: Colors.green[100],
@@ -34,59 +19,26 @@ class _MuckScreenState extends State<MuckScreen> {
         title: const Text('肥料資材使用紀錄'),
         backgroundColor: Colors.green,
       ),
-      drawer: Drawer(
-        child: Material(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(child: Text('選單')),
-              ListTile(
-                title: const Text('農場工作紀錄'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text('肥料資材使用紀錄'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: _buildDrawer(),
       // 根據 ViewModel 的狀態決定要顯示載入圈圈還是列表
-      body: viewModel.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-        children: [
-          // 標題列
-          _buildHeader(),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          // 分組資料 (呼叫 ViewModel 中已經過濾好肥料的 groupedMuckRecords)
-          ...viewModel.groupedMuckRecords.entries.map((entry) {
-            return _buildDateGroup(entry.key, entry.value);
-          }).toList(),
-        ],
-      ),
+        return ListView(
+          children: [
+            _buildHeader(),
+            ...controller.groupedMuckRecords.entries.map((entry) {
+              return _buildDateGroup(entry.key, entry.value);
+            }),
+          ],
+        );
+      }),
 
       // 新增按鈕
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final isAdd = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddRecordScreen()),
-          );
-          if (isAdd == true) {
-            // 透過 ViewModel 重新讀取資料
-            if(context.mounted) context.read<RecordViewModel>().loadRecords();
-          }
-        },
+        onPressed: () => Get.to(() => const AddRecordScreen()),
         child: FittedBox(
           child: Image.asset('assets/pen.png', fit: BoxFit.contain),
         ),
@@ -95,7 +47,7 @@ class _MuckScreenState extends State<MuckScreen> {
   }
 
   // ==== 以下為抽離出來的 UI 方法 ====
-
+  //表格title
   Widget _buildHeader() {
     return Container(
       color: Colors.green[100],
@@ -107,6 +59,34 @@ class _MuckScreenState extends State<MuckScreen> {
           Expanded(flex: 3, child: Text('資材名稱', style: TextStyle(fontWeight: FontWeight.bold))),
           Expanded(flex: 3, child: Text('施肥量', style: TextStyle(fontWeight: FontWeight.bold))),
         ],
+      ),
+    );
+  }
+
+  //左側選單
+  Widget _buildDrawer(){
+    return Drawer(
+      child: Material(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(child: Text('選單')),
+            ListTile(
+              title: Text('農場工作紀錄'),
+              onTap: () {
+                Get.back(); // 🔹 返回上一頁
+                Get.offAll(() => const HomeScreen()); // 🔹 返回
+              },
+            ),
+            ListTile(
+              title: Text('肥料資材使用紀錄'),
+              onTap: () {
+                Get.back();
+                Get.to(() => const MuckScreen());
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,7 +129,7 @@ class _MuckScreenState extends State<MuckScreen> {
               const Divider(height: 1, thickness: 2,),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:no15/screens/splash_screen.dart';
-import 'package:no15/view_models/record_view_model.dart';
-import 'package:provider/provider.dart';
+import 'package:no15/view_models/GetxController.dart';
 
 import 'database_helper.dart';
 
@@ -9,12 +11,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 🔹 啟動 App 前先打開資料庫
   await DatabaseHelper.instance.database;
-  runApp(
-    MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => RecordViewModel())],
-      child: const MyApp(),
-    ),
-  );
+
+  Get.put(RecordController());
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: '農作物紀錄APP',
       theme: ThemeData(

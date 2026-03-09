@@ -1,19 +1,22 @@
-import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 import 'package:no15/models/record_model.dart';
 
 import '../database_helper.dart';
 
-class RecordViewModel extends ChangeNotifier{
-  Map<String, List<CropRecordModel>> _groupedRecords = {};
-  Map<String, List<CropRecordModel>> get groupedRecords => _groupedRecords;
+class RecordController extends GetxController {
+  // 使用 .obs 讓變數變成響應式，這樣只有用到此變數的 Widget 會刷新
+  var groupedRecords = <String, List<CropRecordModel>>{}.obs;
+  var isLoading = false.obs;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  @override
+  void onInit() {
+    super.onInit();
+    loadRecords();
+  }
 
   // 業務邏輯：抓取並整理資料
   Future<void> loadRecords() async {
-    _isLoading = true;
-    notifyListeners(); // 通知 View 顯示載入中
+    isLoading.value = true;
 
     final records = await DatabaseHelper.instance.getRecords();
     Map<String, List<CropRecordModel>> newGroups = {};
@@ -26,9 +29,8 @@ class RecordViewModel extends ChangeNotifier{
       newGroups[record.date]!.add(record);
     }
 
-    _groupedRecords = newGroups;
-    _isLoading = false;
-    notifyListeners(); // 通知 View 更新 UI
+    groupedRecords.value = newGroups;
+    isLoading.value = false;
   }
 
   // 新增紀錄
@@ -56,7 +58,7 @@ class RecordViewModel extends ChangeNotifier{
   Map<String, List<CropRecordModel>> get groupedMuckRecords {
     Map<String, List<CropRecordModel>> filteredGroups = {};
 
-    _groupedRecords.forEach((date, records) {
+    groupedRecords.forEach((date, records) {
       // 針對每一天的紀錄進行過濾
       final muckRecords = records.where((record) => record.fertilizer_used).toList();
 

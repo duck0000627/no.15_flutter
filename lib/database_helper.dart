@@ -80,7 +80,7 @@ class DatabaseHelper {
     final db = await instance.database;
     final result = await db.query('records');
     for (var row in result) {
-      print(row);
+      row;
     }
   }
 

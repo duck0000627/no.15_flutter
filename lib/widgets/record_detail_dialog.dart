@@ -1,27 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:no15/models/record_model.dart';
 import 'package:no15/screens/add_screen.dart';
-import 'package:provider/provider.dart';
+import '../view_models/GetxController.dart';
 
-
-import '../database_helper.dart';
-import '../view_models/record_view_model.dart';
-
-final Map<String, String> taskIcons = {
-  '播種': 'assets/seed.png',
-  '整地': 'assets/land.png',
-  '施肥': 'assets/muck.png',
-  '灌溉': 'assets/water.png',
-  '除草': 'assets/grass.png',
-  '防病蟲害': 'assets/worm.png',
-};
-
-Future<bool?> showRecordDetailDialog(
+Future<void> showRecordDetailDialog(
   BuildContext context,
-    CropRecordModel record,
+  CropRecordModel record,
   String date,
 ) {
-  return showDialog<bool>(
+  return showDialog<void>(
     context: context,
     builder:
         (context) => Dialog(
@@ -39,7 +27,7 @@ Future<bool?> showRecordDetailDialog(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Get.back(),
                       icon: const Icon(Icons.close),
                       color: Colors.green[900],
                     ),
@@ -61,12 +49,12 @@ Future<bool?> showRecordDetailDialog(
                                     actions: [
                                       TextButton(
                                         onPressed:
-                                            () => Navigator.pop(context, false),
+                                            () => Get.back(result: false),
                                         child: const Text('取消'),
                                       ),
                                       TextButton(
                                         onPressed:
-                                            () => Navigator.pop(context, true),
+                                            () => Get.back(result: true),
                                         child: const Text('刪除'),
                                       ),
                                     ],
@@ -75,9 +63,10 @@ Future<bool?> showRecordDetailDialog(
 
                             if (confirm == true) {
                               if (record.id != null) {
-                                await context.read<RecordViewModel>().deleteRecord(record.id!);
+                                await Get.find<RecordController>()
+                                    .deleteRecord(record.id!);
                               }
-                              if(context.mounted) Navigator.pop(context, true);
+                              Get.back();
                             }
                           },
                           icon: const Icon(Icons.delete, color: Colors.green),
@@ -85,16 +74,11 @@ Future<bool?> showRecordDetailDialog(
                         const SizedBox(width: 8),
                         //編輯按鈕
                         IconButton(
-                            onPressed: () async{
-                              final updated = await Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => AddRecordScreen(record: record)),
-                              );
-                              if(updated == true){
-                                if(context.mounted) Navigator.pop(context, true);
-                              }
-                            },
-                            icon: Icon(Icons.edit, color: Colors.green),
+                          onPressed: () {
+                            Get.back(); // 🔹 先關閉 Dialog 再跳轉
+                            Get.to(() => AddRecordScreen(record: record));
+                          },
+                          icon: Icon(Icons.edit, color: Colors.green),
                         ),
                       ],
                     ),
@@ -119,7 +103,7 @@ Future<bool?> showRecordDetailDialog(
                             backgroundColor: Colors.green[100],
                             radius: 30,
                             child: Image.asset(
-                              taskIcons[record.task] ?? 'assets/default.png',
+                              record.taskIcon,
                               width: 40,
                               height: 40,
                               fit: BoxFit.contain,
@@ -165,7 +149,7 @@ Future<bool?> showRecordDetailDialog(
                           //讓備註區域彈性擴展
                           Expanded(
                             child: Text(
-                              record.note.isEmpty ? '-' : record.note,
+                              record.displayNote,
                               softWrap: true,
                               overflow: TextOverflow.visible,
                             ),

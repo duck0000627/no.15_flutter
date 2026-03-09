@@ -1,106 +1,81 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:no15/database_helper.dart';
 import 'package:no15/models/record_model.dart';
 import 'package:no15/screens/muck_screen.dart';
-import 'package:no15/view_models/record_view_model.dart';
-import 'package:provider/provider.dart';
+import 'package:no15/view_models/GetxController.dart';
 
 import 'add_screen.dart';
 import '../widgets/record_detail_dialog.dart';
 
 void printAllRecordsSimple() async {
-  //看SQLite資料
+  //看SQLite資料，debug用
   final records = await DatabaseHelper.instance.getRecords();
-  print(records); // 一行就印出整個資料表
+  records; // 一行就印出整個資料表
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  //APP一打開，就自動去拿最新資料
-  @override
-  void initState() {
-    super.initState();
-    // 透過 ViewModel 初始載入
-    Future.microtask(() => context.read<RecordViewModel>().loadRecords());
-    printAllRecordsSimple(); //看SQLite資料
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // 監聽 ViewModel 的變化
-    final viewModel = context.watch<RecordViewModel>();
+    // 獲取controller
+    final controller = Get.find<RecordController>();
 
     return Scaffold(
       backgroundColor: Colors.green[100],
       appBar: AppBar(title: const Text('農作物紀錄'), backgroundColor: Colors.green),
-      drawer: Drawer(
-        child: Material(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(child: Text('選單')),
-              ListTile(
-                title: Text('農場工作紀錄'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                title: Text('肥料資材使用紀錄'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MuckScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      body:
-          viewModel.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                children: [
-                  //分組資料
-                  ...viewModel.groupedRecords.entries.map((entry) {
-                    return _buildDateGroup(entry.key, entry.value);
-                  }),
-                ],
-              ),
-
-      //新增按鈕
+      drawer: _buildDrawer(),
+      body: Obx(() {
+        // 🔹 只有這裡會根據 isLoading 刷新
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return ListView(
+          children: controller.groupedRecords.entries.map((entry) {
+            return _buildDateGroup(context, entry.key, entry.value);
+          }).toList(),
+        );
+      }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final isAdd = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddRecordScreen()),
-          );
-          if (isAdd == true) {
-            context.read<RecordViewModel>().loadRecords(); // 重新讀取資料並更新畫面
-          }
-        },
-        child: FittedBox(
-          child: Image.asset('assets/pen.png', fit: BoxFit.contain),
+        onPressed: () => Get.to(() => const AddRecordScreen()), // 🔹 Get 路由
+        child: Image.asset('assets/pen.png'),
+      ),
+    );
+  }
+
+
+  //左側選單
+  Widget _buildDrawer(){
+    return Drawer(
+      child: Material(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(child: Text('選單')),
+            ListTile(
+              title: Text('農場工作紀錄'),
+              onTap: () {
+                Get.back(); // 🔹 返回上一頁
+                Get.offAll(() => const HomeScreen()); // 🔹 返回
+              },
+            ),
+            ListTile(
+              title: Text('肥料資材使用紀錄'),
+              onTap: () {
+                Get.back();
+                Get.to(() => const MuckScreen());
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
+
   //農作物紀錄
-  Widget _buildDateGroup(String date, List<CropRecordModel> records) {
+  Widget _buildDateGroup(BuildContext context, String date, List<CropRecordModel> records) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -124,19 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () async {
-                    // 直接傳遞物件給 Dialog
-                    final isChanged = await showRecordDetailDialog(
-                      context,
-                      record,
-                      date,
-                    );
-
-                    // 再 load 一次
-                    if (isChanged == true) {
-                      context.read<RecordViewModel>().loadRecords();
-                    }
-                  },
+                  onTap: () async => showRecordDetailDialog(context, record, date),
                   hoverColor: Colors.green[80],
                   splashColor: Colors.green[100],
                   child: Padding(
@@ -162,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 radius: 10,
                                 child: FittedBox(
                                   child: Image.asset(
-                                    taskIcons[record.task] ?? 'assets/grass.png',
+                                    record.taskIcon,
                                     fit: BoxFit.contain,
                                     width: 20,
                                     height: 20,
@@ -190,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           flex: 2,
                           child: Text(
-                            record.note.isEmpty ? '-' : record.note,
+                            record.displayNote,
                           ),
                         ),
                       ],
@@ -201,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Divider(height: 1, thickness: 2,),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }

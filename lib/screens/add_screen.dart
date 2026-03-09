@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:no15/database_helper.dart';
+import 'package:get/get.dart';
 import 'package:no15/models/record_model.dart';
-import 'package:provider/provider.dart';
-
-import '../view_models/record_view_model.dart';
+import '../view_models/GetxController.dart';
 
 class AddRecordScreen extends StatefulWidget {
   final CropRecordModel? record;
@@ -236,23 +233,19 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                     );
 
                     try {
-                      //透過 ViewModel 來處理存檔邏輯
+                      // 🔹 透過 GetX Controller 儲存資料
+                      final controller = Get.find<RecordController>();
                       if (widget.record == null) {
                         // 新增
-                        await context.read<RecordViewModel>().addRecord(
-                          newRecord,
-                        );
+                        await controller.addRecord(newRecord);
                       } else {
                         // 編輯
-                        await context.read<RecordViewModel>().updateRecord(
-                          newRecord,
-                        );
+                        await controller.updateRecord(newRecord);
                       }
-
-                      // 因為 ViewModel 會通知畫面更新，所以我們只需要返回上一頁就好
-                      if (mounted) Navigator.pop(context, true);
+                      // 🔹 儲存完畢後直接退回上一頁，畫面會由 GetX 自動重整！
+                      Get.back();
                     } catch (e) {
-                      print('存檔失敗:$e');
+                      '存檔失敗:$e';
                     }
                   } else {
                     ScaffoldMessenger.of(
